@@ -95,8 +95,11 @@ layout_mode = 2
 text = "Random"
 icon_alignment = 1
 
-[node name="GliderButton" type="Button" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=153060599]
+[node name="PatternButton" type="Button" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=153060599]
 layout_mode = 2
 theme = ExtResource("3_utogw")
 text = "Glider
 "
+
+[node name="PatternSelect" type="OptionButton" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=2121598196]
+layout_mode = 2

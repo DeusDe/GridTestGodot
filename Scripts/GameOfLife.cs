@@ -38,6 +38,178 @@ public partial class GameOfLife : Node2D
 	new Vector2I(2, 2),
 	};
 
+	// Still lifes
+	public static readonly Vector2I[] BlockPattern =
+	{
+	new Vector2I(0, 0),
+	new Vector2I(1, 0),
+	new Vector2I(0, 1),
+	new Vector2I(1, 1),
+};
+
+	public static readonly Vector2I[] BeehivePattern =
+	{
+	new Vector2I(1, 0),
+	new Vector2I(2, 0),
+	new Vector2I(0, 1),
+	new Vector2I(3, 1),
+	new Vector2I(1, 2),
+	new Vector2I(2, 2),
+};
+
+	// Oscillators
+	public static readonly Vector2I[] BlinkerPattern =
+	{
+	new Vector2I(0, 1),
+	new Vector2I(1, 1),
+	new Vector2I(2, 1),
+};
+
+	public static readonly Vector2I[] ToadPattern =
+	{
+	new Vector2I(1, 0),
+	new Vector2I(2, 0),
+	new Vector2I(3, 0),
+	new Vector2I(0, 1),
+	new Vector2I(1, 1),
+	new Vector2I(2, 1),
+};
+
+	public static readonly Vector2I[] BeaconPattern =
+	{
+	new Vector2I(0, 0),
+	new Vector2I(1, 0),
+	new Vector2I(0, 1),
+	new Vector2I(3, 2),
+	new Vector2I(2, 3),
+	new Vector2I(3, 3),
+};
+
+	public static readonly Vector2I[] LightweightSpaceshipPattern =
+	{
+	new Vector2I(1, 0),
+	new Vector2I(4, 0),
+	new Vector2I(0, 1),
+	new Vector2I(0, 2),
+	new Vector2I(4, 2),
+	new Vector2I(0, 3),
+	new Vector2I(1, 3),
+	new Vector2I(2, 3),
+	new Vector2I(3, 3),
+};
+
+	public static readonly Vector2I[] LoafPattern =
+	{
+	new Vector2I(1, 0),
+	new Vector2I(2, 0),
+	new Vector2I(0, 1),
+	new Vector2I(3, 1),
+	new Vector2I(1, 2),
+	new Vector2I(3, 2),
+	new Vector2I(2, 3),
+};
+
+	public static readonly Vector2I[] BoatPattern =
+	{
+	new Vector2I(0, 0),
+	new Vector2I(1, 0),
+	new Vector2I(0, 1),
+	new Vector2I(2, 1),
+	new Vector2I(1, 2),
+};
+
+	public static readonly Vector2I[] PulsarPattern =
+	{
+	new Vector2I(4, 0), new Vector2I(5, 0), new Vector2I(6, 0),
+	new Vector2I(10, 0), new Vector2I(11, 0), new Vector2I(12, 0),
+
+	new Vector2I(2, 2), new Vector2I(7, 2), new Vector2I(9, 2), new Vector2I(14, 2),
+	new Vector2I(2, 3), new Vector2I(7, 3), new Vector2I(9, 3), new Vector2I(14, 3),
+	new Vector2I(2, 4), new Vector2I(7, 4), new Vector2I(9, 4), new Vector2I(14, 4),
+
+	new Vector2I(4, 5), new Vector2I(5, 5), new Vector2I(6, 5),
+	new Vector2I(10, 5), new Vector2I(11, 5), new Vector2I(12, 5),
+
+	new Vector2I(4, 7), new Vector2I(5, 7), new Vector2I(6, 7),
+	new Vector2I(10, 7), new Vector2I(11, 7), new Vector2I(12, 7),
+
+	new Vector2I(2, 8), new Vector2I(7, 8), new Vector2I(9, 8), new Vector2I(14, 8),
+	new Vector2I(2, 9), new Vector2I(7, 9), new Vector2I(9, 9), new Vector2I(14, 9),
+	new Vector2I(2, 10), new Vector2I(7, 10), new Vector2I(9, 10), new Vector2I(14, 10),
+
+	new Vector2I(4, 12), new Vector2I(5, 12), new Vector2I(6, 12),
+	new Vector2I(10, 12), new Vector2I(11, 12), new Vector2I(12, 12),
+};
+
+	public static readonly Vector2I[] PentadecathlonPattern =
+	{
+	new Vector2I(1, 0),
+	new Vector2I(2, 0),
+	new Vector2I(3, 0),
+	new Vector2I(4, 0),
+	new Vector2I(5, 0),
+	new Vector2I(6, 0),
+	new Vector2I(7, 0),
+	new Vector2I(8, 0),
+
+	new Vector2I(0, 1),
+	new Vector2I(2, 1),
+	new Vector2I(3, 1),
+	new Vector2I(4, 1),
+	new Vector2I(5, 1),
+	new Vector2I(6, 1),
+	new Vector2I(7, 1),
+	new Vector2I(9, 1),
+
+	new Vector2I(1, 2),
+	new Vector2I(2, 2),
+	new Vector2I(3, 2),
+	new Vector2I(4, 2),
+	new Vector2I(5, 2),
+	new Vector2I(6, 2),
+	new Vector2I(7, 2),
+	new Vector2I(8, 2),
+};
+
+	public static readonly Vector2I[] RPentominoPattern =
+	{
+	new Vector2I(1, 0),
+	new Vector2I(2, 0),
+	new Vector2I(0, 1),
+	new Vector2I(1, 1),
+	new Vector2I(1, 2),
+};
+
+	public static readonly Vector2I[] SmallGunSeedPattern =
+	{
+	new Vector2I(0, 4), new Vector2I(1, 4),
+	new Vector2I(0, 5), new Vector2I(1, 5),
+
+	new Vector2I(10, 4), new Vector2I(10, 5), new Vector2I(10, 6),
+	new Vector2I(11, 3), new Vector2I(11, 7),
+	new Vector2I(12, 2), new Vector2I(12, 8),
+	new Vector2I(13, 2), new Vector2I(13, 8),
+};
+
+	public enum PatternType
+	{
+		Glider,
+		Block,
+		Beehive,
+		Blinker,
+		Toad,
+		Beacon,
+		LightweightSpaceship,
+		Loaf,
+		Boat,
+		Pulsar,
+		Pentadecathlon,
+		RPentomino,
+		SmallGunSeed
+	}
+
+
+
 	// Stats
 	private long _generationCount = 0;
 	private long _cellsDiedCount = 0;
@@ -55,7 +227,7 @@ public partial class GameOfLife : Node2D
 	//Tool
 	private enum Tool { Draw, Pattern }
 	private Tool _currentTool = Tool.Draw;
-	private Vector2I[] _currentPattern = GliderPattern; // Default
+	private Vector2I[] _currentPattern = GetPattern(PatternType.Glider);
 
 
 	// -------------------------------------------------------
@@ -318,13 +490,6 @@ public partial class GameOfLife : Node2D
 		EmitStatsChanged();
 	}
 
-	public void PlaceGliderAtHover()
-	{
-		if (_hoverX < 0 || _hoverY < 0)
-			return;
-
-		ApplyPattern(new Vector2I(_hoverX, _hoverY), GliderPattern);
-	}
 
 	// -------------------------------------------------------
 	// Game of Life Logic
@@ -466,12 +631,39 @@ public partial class GameOfLife : Node2D
 	// -------------------------------------------------------
 
 	public void SetToolDraw() => _currentTool = Tool.Draw;
-	public void SetToolPattern(Vector2I[] pattern)
+
+	public void SetToolPattern(PatternType type)
 	{
 		_currentTool = Tool.Pattern;
-		_currentPattern = pattern;
+		_currentPattern = GetPattern(type);
 	}
 
+	public void SetToolPattern()
+	{
+		_currentTool = Tool.Pattern;
+	}
+
+
+	public static Vector2I[] GetPattern(PatternType type)
+	{
+		switch (type)
+		{
+			case PatternType.Glider: return GliderPattern;
+			case PatternType.Block: return BlockPattern;
+			case PatternType.Beehive: return BeehivePattern;
+			case PatternType.Blinker: return BlinkerPattern;
+			case PatternType.Toad: return ToadPattern;
+			case PatternType.Beacon: return BeaconPattern;
+			case PatternType.LightweightSpaceship: return LightweightSpaceshipPattern;
+			case PatternType.Loaf: return LoafPattern;
+			case PatternType.Boat: return BoatPattern;
+			case PatternType.Pulsar: return PulsarPattern;
+			case PatternType.Pentadecathlon: return PentadecathlonPattern;
+			case PatternType.RPentomino: return RPentominoPattern;
+			case PatternType.SmallGunSeed: return SmallGunSeedPattern;
+			default: return GliderPattern;
+		}
+	}
 
 
 	// -------------------------------------------------------
