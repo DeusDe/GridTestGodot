@@ -3,14 +3,14 @@
 [ext_resource type="Script" uid="uid://ckagyqr0iw67x" path="res://Scripts/GameOfLife.cs" id="1_gk1ju"]
 [ext_resource type="Script" uid="uid://ctym1axtqda1u" path="res://Scripts/Camera.cs" id="2_r8u36"]
 [ext_resource type="Theme" uid="uid://cem2jps5jd2mi" path="res://Themes/Theme.tres" id="3_utogw"]
+[ext_resource type="Texture2D" uid="uid://bfx70vq3yin84" path="res://Icons/Home_32x32.png" id="4_r8u36"]
 
 [node name="GameOfLife" type="Node2D" unique_id=1983781561]
 script = ExtResource("1_gk1ju")
-GridWidth = 40
-GridHeight = 40
+GridWidth = 150
+GridHeight = 150
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=450886747 node_paths=PackedStringArray("Gol")]
-anchor_mode = 0
 script = ExtResource("2_r8u36")
 Gol = NodePath("..")
 
@@ -33,6 +33,9 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="PopulationLabel" type="Label" parent="Camera2D/UI/Vertical" unique_id=781966379]
+layout_mode = 2
+
+[node name="TPSLabel" type="Label" parent="Camera2D/UI/Vertical" unique_id=1059173577]
 layout_mode = 2
 
 [node name="AspectRatioContainer" type="AspectRatioContainer" parent="Camera2D/UI/Vertical" unique_id=1099753308]
@@ -81,3 +84,13 @@ text = "--------"
 layout_mode = 2
 theme = ExtResource("3_utogw")
 text = "--------"
+
+[node name="CenterCameraButton" type="Button" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=756938634]
+layout_mode = 2
+icon = ExtResource("4_r8u36")
+icon_alignment = 1
+
+[node name="RandomizeButton" type="Button" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=1549049403]
+layout_mode = 2
+text = "Random"
+icon_alignment = 1

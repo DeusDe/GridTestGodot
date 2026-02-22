@@ -14,6 +14,11 @@ config/name="Playground"
 run/main_scene="uid://cv8ajjdjfkaii"
 config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
 
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+
 [dotnet]
 
 project/assembly_name="Playground"

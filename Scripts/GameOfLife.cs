@@ -11,15 +11,19 @@ public partial class GameOfLife : Node2D
 	[Export] public Color GridColor = new Color(0.2f, 0.03f, 0.045f, 1f);
 	[Export] public Color HoverColor = new Color(1f, 1f, 1f, 0.2f);
 	[Signal] public delegate void StatsChangedEventHandler();
+	private Random _rng = new Random();
+	private float _rngDensity = 0.35f;
 	private int _hoverX = -1;
 	private int _hoverY = -1;
 	private bool[,] _cells;
 	private bool[,] _nextCells;
-	private int _generationCount = 0;
-	private int _cellsDiedCount = 0;
-	private int _cellsRevivedCount = 0;
-	private int _populationCount = 0;
-
+	private long _generationCount = 0;
+	private long _cellsDiedCount = 0;
+	private long _cellsRevivedCount = 0;
+	private long _populationCount = 0;
+	private int _ticksThisSecond = 0;
+	private int _ticksPerSecond = 0;
+	private double _tpsTimer = 0.0;
 	private double _timer = 0.0f;
 	private double _timerSeconds = 0.2f;
 	private bool _timerActive = false;
@@ -40,6 +44,15 @@ public partial class GameOfLife : Node2D
 				_timer -= _timerSeconds;
 				NextTick();
 			}
+		}
+
+		_tpsTimer += delta;
+		if (_tpsTimer >= 1.0)
+		{
+			_tpsTimer -= 1.0;
+			_ticksPerSecond = _ticksThisSecond;
+			_ticksThisSecond = 0;
+			EmitStatsChanged();
 		}
 	}
 
@@ -197,6 +210,7 @@ public partial class GameOfLife : Node2D
 	public void NextTick()
 	{
 		_populationCount = 0;
+		_ticksThisSecond++;
 		for (int x = 0; x < GridWidth; x++)
 		{
 			for (int y = 0; y < GridHeight; y++)
@@ -253,11 +267,36 @@ public partial class GameOfLife : Node2D
 		EmitSignal(SignalName.StatsChanged);
 	}
 
+	public void Randomize()
+	{
+		_populationCount = 0;
+		_cellsDiedCount = 0;
+		_cellsRevivedCount = 0;
+		_generationCount = 0;
+
+		for (int x = 0; x < GridWidth; x++)
+		{
+			for (int y = 0; y < GridHeight; y++)
+			{
+				bool alive = _rng.NextDouble() < _rngDensity;
+				_cells[x, y] = alive;
+				_nextCells[x, y] = alive;
+
+				if (alive)
+					_populationCount++;
+			}
+		}
+
+		QueueRedraw();
+		EmitStatsChanged();
+	}
+
 	public bool TimerActive => _timerActive;
-	public int GenerationCount => _generationCount;
-	public int CellsDiedCount => _cellsDiedCount;
-	public int CellsRevivedCount => _cellsRevivedCount;
-	public int PopulationCount => _populationCount;
+	public long GenerationCount => _generationCount;
+	public long CellsDiedCount => _cellsDiedCount;
+	public long CellsRevivedCount => _cellsRevivedCount;
+	public long PopulationCount => _populationCount;
+	public int TicksPerSecond => _ticksPerSecond;
 
 
 

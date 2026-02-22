@@ -10,7 +10,8 @@ public partial class Camera : Camera2D
 	[Export] public float ZoomStep = 0.1f;
 	[Export] public float MoveSpeed = 0.4f;
 	[Export] public float MinZoom = 0.3f;
-	[Export] public float MaxZoom = 5.0f;
+	[Export] public float MaxZoom = 20.0f;
+	[Export] public float CameraMargin = 20.0f;
 	[Export] public string LabelBasePath = "UI/Vertical/";
 	[Export] public string ControlBasePath = "UI/Vertical/Panel/Control/";
 
@@ -19,6 +20,7 @@ public partial class Camera : Camera2D
 	private Label _diedLabel;
 	private Label _revivedLabel;
 	private Label _populationLabel;
+	private Label _tpsLabel;
 
 	//Color Picker
 	private ColorPickerButton _gridColor;
@@ -27,6 +29,8 @@ public partial class Camera : Camera2D
 	// Buttons
 	private Button _nextButton;
 	private Button _startButton;
+	private Button _centerCameraButton;
+	private Button _rngButton;
 
 	// Tick(Next Frame)
 	private SpinBox _tickIntervalBox;
@@ -44,22 +48,28 @@ public partial class Camera : Camera2D
 			return;
 		}
 
+		CenterCameraPosition();
 
-		_generationLabel = GetNode<Label>( LabelBasePath + "GenerationLabel");
-		_diedLabel = GetNode<Label>( LabelBasePath + "DiedLabel");
-		_revivedLabel = GetNode<Label>( LabelBasePath + "RevivedLabel");
-		_populationLabel = GetNode<Label>( LabelBasePath + "PopulationLabel");
+		_generationLabel = GetNode<Label>(LabelBasePath + "GenerationLabel");
+		_diedLabel = GetNode<Label>(LabelBasePath + "DiedLabel");
+		_revivedLabel = GetNode<Label>(LabelBasePath + "RevivedLabel");
+		_populationLabel = GetNode<Label>(LabelBasePath + "PopulationLabel");
+		_tpsLabel = GetNode<Label>(LabelBasePath + "TPSLabel");
 
-		_nextButton = GetNode<Button>( ControlBasePath + "NextButton");
-		_startButton = GetNode<Button>( ControlBasePath + "StartButton");
+		_nextButton = GetNode<Button>(ControlBasePath + "NextButton");
+		_startButton = GetNode<Button>(ControlBasePath + "StartButton");
+		_centerCameraButton = GetNode<Button>(ControlBasePath + "CenterCameraButton");
+		_rngButton = GetNode<Button>(ControlBasePath + "RandomizeButton");
 
-		_tickIntervalBox = GetNode<SpinBox>( ControlBasePath + "TickIntervalBox");
+		_tickIntervalBox = GetNode<SpinBox>(ControlBasePath + "TickIntervalBox");
 
-		_aliveColor = GetNode<ColorPickerButton>( ControlBasePath + "AliveColor");
-		_gridColor = GetNode<ColorPickerButton>( ControlBasePath + "GridColor");
+		_aliveColor = GetNode<ColorPickerButton>(ControlBasePath + "AliveColor");
+		_gridColor = GetNode<ColorPickerButton>(ControlBasePath + "GridColor");
 
 		_nextButton.Pressed += OnNextButtonPressed;
 		_startButton.Pressed += OnStartButtonPressed;
+		_centerCameraButton.Pressed += CenterCameraPosition;
+		_rngButton.Pressed += Gol.Randomize;
 
 		_aliveColor.Color = Gol.ActiveColor;
 		_gridColor.Color = Gol.GridColor;
@@ -72,12 +82,39 @@ public partial class Camera : Camera2D
 		OnStatsChanged();
 	}
 
+	private void CenterCameraPosition()
+	{
+
+		float gridWidthPx = Gol.GridWidth * Gol.CellWidth;
+		float gridHeightPx = Gol.GridHeight * Gol.CellHeight;
+
+		Vector2 viewportSize = GetViewport().GetVisibleRect().Size;
+
+		float usableWidth = viewportSize.X - 2.0f * CameraMargin;
+		float usableHeight = viewportSize.Y - 2.0f * CameraMargin;
+
+		if (usableWidth <= 0 || usableHeight <= 0)
+			return;
+
+		float zoomX = usableWidth / gridWidthPx;
+		float zoomY = usableHeight / gridHeightPx;
+		float zoomLevel = MathF.Min(zoomX, zoomY);
+
+		Zoom = new Vector2(zoomLevel, zoomLevel);
+
+		Position = new Vector2(
+			gridWidthPx / 2.0f,
+			gridHeightPx / 2.0f
+		);
+	}
+
 	private void OnStatsChanged()
 	{
 		_generationLabel.Text = $"Generation: {Gol.GenerationCount}";
-		_diedLabel.Text = $"Gestorben: {Gol.CellsDiedCount}";
-		_revivedLabel.Text = $"Neu geboren: {Gol.CellsRevivedCount}";
+		_diedLabel.Text = $"Died: {Gol.CellsDiedCount}";
+		_revivedLabel.Text = $"Reborn: {Gol.CellsRevivedCount}";
 		_populationLabel.Text = $"Population: {Gol.PopulationCount}";
+		_tpsLabel.Text = $"TPS: {Gol.TicksPerSecond}";
 	}
 
 	public override void _Input(InputEvent @event)
