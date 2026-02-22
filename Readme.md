@@ -21,7 +21,7 @@ A implementation of Conway's Game of Life built with **Godot 4** and **C#**.
 | **Erase Cell** | Right Mouse Button |
 
 ## Getting Started
-
+   
 ### Prerequisites
 * [Godot Engine 4.x .NET Edition](https://godotengine.org/download/)
 * A C# IDE or editor (e.g., Visual Studio, VS Code, JetBrains Rider)
