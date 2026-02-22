@@ -14,37 +14,35 @@ public partial class Camera : Camera2D
 	[Export] public float MinZoom = 0.3f;
 	[Export] public float MaxZoom = 20.0f;
 	[Export] public float CameraMargin = 20.0f;
-	[Export] public string LabelBasePath = "UI/Vertical/";
-	[Export] public string ControlBasePath = "UI/Vertical/Panel/Control/";
 
 	// -------------------------------------------------------
 	// UI: Labels
 	// -------------------------------------------------------
 
-	private Label _generationLabel;
-	private Label _diedLabel;
-	private Label _revivedLabel;
-	private Label _populationLabel;
-	private Label _tpsLabel;
+	[Export] private Label _generationLabel;
+	[Export] private Label _diedLabel;
+	[Export] private Label _revivedLabel;
+	[Export] private Label _populationLabel;
+	[Export] private Label _tpsLabel;
 
 	// -------------------------------------------------------
 	// UI: Color Picker
 	// -------------------------------------------------------
 
-	private ColorPickerButton _gridColor;
-	private ColorPickerButton _aliveColor;
+	[Export] private ColorPickerButton _gridColor;
+	[Export] private ColorPickerButton _aliveColor;
 
 	// -------------------------------------------------------
 	// UI: Buttons & Controls
 	// -------------------------------------------------------
 
-	private Button _nextButton;
-	private Button _startButton;
-	private Button _centerCameraButton;
-	private Button _rngButton;
-	private Button _patternButton;
-	private SpinBox _tickIntervalBox;
-	private OptionButton _patternSelect;
+	[Export] private Button _nextButton;
+	[Export] private Button _startButton;
+	[Export] private Button _centerCameraButton;
+	[Export] private Button _rngButton;
+	[Export] private Button _toolButton;
+	[Export] private SpinBox _tickIntervalBox;
+	[Export] private OptionButton _patternSelect;
 
 	// -------------------------------------------------------
 	// Camera Drag State
@@ -67,28 +65,6 @@ public partial class Camera : Camera2D
 		}
 
 		CenterCameraPosition();
-
-		// Labels
-		_generationLabel = GetNode<Label>(LabelBasePath + "GenerationLabel");
-		_diedLabel = GetNode<Label>(LabelBasePath + "DiedLabel");
-		_revivedLabel = GetNode<Label>(LabelBasePath + "RevivedLabel");
-		_populationLabel = GetNode<Label>(LabelBasePath + "PopulationLabel");
-		_tpsLabel = GetNode<Label>(LabelBasePath + "TPSLabel");
-
-		// Buttons
-		_nextButton = GetNode<Button>(ControlBasePath + "NextButton");
-		_startButton = GetNode<Button>(ControlBasePath + "StartButton");
-		_centerCameraButton = GetNode<Button>(ControlBasePath + "CenterCameraButton");
-		_rngButton = GetNode<Button>(ControlBasePath + "RandomizeButton");
-		_patternButton = GetNode<Button>(ControlBasePath + "PatternButton");
-		_patternSelect = GetNode<OptionButton>(ControlBasePath + "PatternSelect");
-
-		// SpinBox
-		_tickIntervalBox = GetNode<SpinBox>(ControlBasePath + "TickIntervalBox");
-
-		// ColorPicker
-		_aliveColor = GetNode<ColorPickerButton>(ControlBasePath + "AliveColor");
-		_gridColor = GetNode<ColorPickerButton>(ControlBasePath + "GridColor");
 
 		//Pattern
 		_patternSelect.AddItem("Glider", (int)GameOfLife.PatternType.Glider);
@@ -113,7 +89,7 @@ public partial class Camera : Camera2D
 		_centerCameraButton.Pressed += CenterCameraPosition;
 		_rngButton.Pressed += Gol.Randomize;
 
-		_patternButton.Pressed += Gol.SetToolPattern;
+		_toolButton.Pressed += OnToolButtonPressed;
 		_patternSelect.ItemSelected += OnPatternSelected;
 
 		_aliveColor.Color = Gol.ActiveColor;
@@ -124,7 +100,27 @@ public partial class Camera : Camera2D
 
 		Gol.StatsChanged += OnStatsChanged;
 
+		// Tool
+		_toolButton.Text = "Pattern";
+		Gol.SetToolDraw();
+
 		OnStatsChanged();
+	}
+
+	public override void _ExitTree()
+	{
+		_nextButton.Pressed -= OnNextButtonPressed;
+		_startButton.Pressed -= OnStartButtonPressed;
+		_centerCameraButton.Pressed -= CenterCameraPosition;
+		_rngButton.Pressed -= Gol.Randomize;
+
+		_toolButton.Pressed -= Gol.SetToolPattern;
+		_patternSelect.ItemSelected -= OnPatternSelected;
+
+		_aliveColor.ColorChanged -= AliveColorPressed;
+		_gridColor.ColorChanged -= GridColorPressed;
+
+		Gol.StatsChanged -= OnStatsChanged;
 	}
 
 	// -------------------------------------------------------
@@ -147,6 +143,7 @@ public partial class Camera : Camera2D
 		float zoomX = usableWidth / gridWidthPx;
 		float zoomY = usableHeight / gridHeightPx;
 		float zoomLevel = MathF.Min(zoomX, zoomY);
+		zoomLevel = Mathf.Clamp(zoomLevel, MinZoom, MaxZoom);
 
 		Zoom = new Vector2(zoomLevel, zoomLevel);
 
@@ -266,6 +263,21 @@ public partial class Camera : Camera2D
 		var type = (GameOfLife.PatternType)id;
 
 		Gol.SetToolPattern(type);
+	}
+
+	private void OnToolButtonPressed()
+	{
+		switch (Gol.CurrentTool)
+		{
+			case GameOfLife.Tool.Draw:
+				Gol.SetToolPattern();
+				_toolButton.Text = "Draw";
+				break;
+			case GameOfLife.Tool.Pattern:
+				Gol.SetToolDraw();
+				_toolButton.Text = "Pattern";
+				break;
+		}
 	}
 
 

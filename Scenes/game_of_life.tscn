@@ -7,12 +7,26 @@
 
 [node name="GameOfLife" type="Node2D" unique_id=1983781561]
 script = ExtResource("1_gk1ju")
-GridWidth = 150
-GridHeight = 150
+GridWidth = 1000
+GridHeight = 1000
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=450886747 node_paths=PackedStringArray("Gol")]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=450886747 node_paths=PackedStringArray("Gol", "_generationLabel", "_diedLabel", "_revivedLabel", "_populationLabel", "_tpsLabel", "_gridColor", "_aliveColor", "_nextButton", "_startButton", "_centerCameraButton", "_rngButton", "_toolButton", "_tickIntervalBox", "_patternSelect")]
 script = ExtResource("2_r8u36")
 Gol = NodePath("..")
+_generationLabel = NodePath("UI/Vertical/GenerationLabel")
+_diedLabel = NodePath("UI/Vertical/DiedLabel")
+_revivedLabel = NodePath("UI/Vertical/RevivedLabel")
+_populationLabel = NodePath("UI/Vertical/PopulationLabel")
+_tpsLabel = NodePath("UI/Vertical/TPSLabel")
+_gridColor = NodePath("UI/Vertical/Panel/Control/GridColor")
+_aliveColor = NodePath("UI/Vertical/Panel/Control/AliveColor")
+_nextButton = NodePath("UI/Vertical/Panel/Control/NextButton")
+_startButton = NodePath("UI/Vertical/Panel/Control/StartButton")
+_centerCameraButton = NodePath("UI/Vertical/Panel/Control/CenterCameraButton")
+_rngButton = NodePath("UI/Vertical/Panel/Control/RandomizeButton")
+_toolButton = NodePath("UI/Vertical/Panel/Control/PatternButton")
+_tickIntervalBox = NodePath("UI/Vertical/Panel/Control/TickIntervalBox")
+_patternSelect = NodePath("UI/Vertical/Panel/Control/PatternSelect")
 
 [node name="UI" type="CanvasLayer" parent="Camera2D" unique_id=2058974667]
 
@@ -98,8 +112,7 @@ icon_alignment = 1
 [node name="PatternButton" type="Button" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=153060599]
 layout_mode = 2
 theme = ExtResource("3_utogw")
-text = "Glider
-"
+text = "Glider"
 
 [node name="PatternSelect" type="OptionButton" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=2121598196]
 layout_mode = 2

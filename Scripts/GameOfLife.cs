@@ -225,9 +225,14 @@ public partial class GameOfLife : Node2D
 	private bool _timerActive = false;
 
 	//Tool
-	private enum Tool { Draw, Pattern }
+	public enum Tool { Draw, Pattern }
 	private Tool _currentTool = Tool.Draw;
 	private Vector2I[] _currentPattern = GetPattern(PatternType.Glider);
+
+	// Rendering & Texture
+	private Image _gridImage;
+	private ImageTexture _gridTexture;
+	private byte[] _imageData;
 
 
 	// -------------------------------------------------------
@@ -238,6 +243,11 @@ public partial class GameOfLife : Node2D
 	{
 		_cells = new bool[GridWidth, GridHeight];
 		_nextCells = new bool[GridWidth, GridHeight];
+
+		_imageData = new byte[GridWidth * GridHeight * 4]; 
+		_gridImage = Image.CreateFromData(GridWidth, GridHeight, false, Image.Format.Rgba8, _imageData);
+		_gridTexture = ImageTexture.CreateFromImage(_gridImage);
+		TextureFilter = TextureFilterEnum.Nearest;
 	}
 
 	public override void _Process(double delta)
@@ -258,62 +268,45 @@ public partial class GameOfLife : Node2D
 			_tpsTimer -= 1.0;
 			_ticksPerSecond = _ticksThisSecond;
 			_ticksThisSecond = 0;
-			EmitStatsChanged();
 		}
+
+		EmitStatsChanged();
 	}
 
-	public override void _Draw()
+public override void _Draw()
 	{
-		DrawGrid();
-		DrawCells();
+var fullRect = new Rect2(0, 0, GridWidth * CellWidth, GridHeight * CellHeight);
+		DrawTextureRect(_gridTexture, fullRect, false);
+		DrawGridLines();
+		DrawHover();
 	}
 
-	// -------------------------------------------------------
-	// Drawing
-	// -------------------------------------------------------
-
-	private void DrawGrid()
+	private void DrawGridLines()
 	{
 		var totalWidth = GridWidth * CellWidth;
 		var totalHeight = GridHeight * CellHeight;
 
-		// Vertical
 		for (int x = 0; x <= GridWidth; x++)
-		{
-			var from = new Vector2(x * CellWidth, 0);
-			var to = new Vector2(x * CellWidth, totalHeight);
-			DrawLine(from, to, GridColor, 1);
-		}
+			DrawLine(new Vector2(x * CellWidth, 0), new Vector2(x * CellWidth, totalHeight), GridColor, 1);
 
-		// Horizontal
 		for (int y = 0; y <= GridHeight; y++)
-		{
-			var from = new Vector2(0, y * CellHeight);
-			var to = new Vector2(totalWidth, y * CellHeight);
-			DrawLine(from, to, GridColor, 1);
-		}
+			DrawLine(new Vector2(0, y * CellHeight), new Vector2(totalWidth, y * CellHeight), GridColor, 1);
 	}
 
-	private void DrawCells()
+	public void RefreshColors()
 	{
 		for (int x = 0; x < GridWidth; x++)
 		{
 			for (int y = 0; y < GridHeight; y++)
 			{
-				if (!_cells[x, y])
-					continue;
-
-				var rect = new Rect2(
-					x * CellWidth + 1,
-					y * CellHeight + 1,
-					CellWidth - 2,
-					CellHeight - 2
-				);
-				DrawRect(rect, ActiveColor);
+				SetPixelData(x, y, _cells[x, y]);
 			}
 		}
+		ApplyImageData();
+	}
 
-		// Hover‑Highlight
+	private void DrawHover()
+	{
 		switch (_currentTool)
 		{
 			case Tool.Draw:
@@ -328,27 +321,30 @@ public partial class GameOfLife : Node2D
 					DrawRect(hoverRect, HoverColor);
 				}
 				break;
+
 			case Tool.Pattern:
-				foreach (var offset in _currentPattern)
+				if (_hoverX >= 0 && _hoverY >= 0) 
 				{
-					int x = _hoverX + offset.X;
-					int y = _hoverY + offset.Y;
+					foreach (var offset in _currentPattern)
+					{
+						int x = _hoverX + offset.X;
+						int y = _hoverY + offset.Y;
 
-					if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
-						continue;
+						if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
+							continue;
 
-					var hoverRect = new Rect2(
-						x * CellWidth,
-						y * CellHeight,
-						CellWidth,
-						CellHeight
-					);
+						var hoverRect = new Rect2(
+							x * CellWidth,
+							y * CellHeight,
+							CellWidth,
+							CellHeight
+						);
 
-					DrawRect(hoverRect, HoverColor);
+						DrawRect(hoverRect, HoverColor);
+					}
 				}
 				break;
 		}
-
 	}
 
 	// -------------------------------------------------------
@@ -375,17 +371,15 @@ public partial class GameOfLife : Node2D
 
 	private void HandleMouseButton(InputEventMouseButton mouseEvent)
 	{
-		// Button released: Zeichnen stoppen
 		if (!mouseEvent.Pressed)
 		{
 			_isDrawing = false;
 			return;
 		}
 
-		// Position in Zellenkoordinaten
 		Vector2 localPos = GetLocalMousePosition();
-		int x = (int)(localPos.X / CellWidth);
-		int y = (int)(localPos.Y / CellHeight);
+		int x = Mathf.FloorToInt(localPos.X / CellWidth);
+		int y = Mathf.FloorToInt(localPos.Y / CellHeight);
 
 		if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
 			return;
@@ -410,7 +404,6 @@ public partial class GameOfLife : Node2D
 			case Tool.Pattern:
 				if (mouseEvent.ButtonIndex == MouseButton.Left)
 				{
-					// Pattern an Hover oder Klick-Position einfügen
 					if (_hoverX >= 0 && _hoverY >= 0)
 						ApplyPattern(new Vector2I(_hoverX, _hoverY), _currentPattern);
 					else
@@ -424,8 +417,8 @@ public partial class GameOfLife : Node2D
 	private void OnDragDraw(InputEventMouseMotion motion)
 	{
 		Vector2 localPos = GetLocalMousePosition();
-		int x = (int)(localPos.X / CellWidth);
-		int y = (int)(localPos.Y / CellHeight);
+		int x = Mathf.FloorToInt(localPos.X / CellWidth);
+		int y = Mathf.FloorToInt(localPos.Y / CellHeight);
 
 		if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
 			return;
@@ -436,8 +429,8 @@ public partial class GameOfLife : Node2D
 	public void OnMouseHover(InputEventMouseMotion motion)
 	{
 		Vector2 localPos = GetLocalMousePosition();
-		int hx = (int)(localPos.X / CellWidth);
-		int hy = (int)(localPos.Y / CellHeight);
+		int hx = Mathf.FloorToInt(localPos.X / CellWidth);
+		int hy = Mathf.FloorToInt(localPos.Y / CellHeight);
 
 		if (hx < 0 || hx >= GridWidth || hy < 0 || hy >= GridHeight)
 		{
@@ -450,7 +443,7 @@ public partial class GameOfLife : Node2D
 			_hoverY = hy;
 		}
 
-		QueueRedraw();
+		ApplyImageData();
 	}
 
 	// -------------------------------------------------------
@@ -463,14 +456,14 @@ public partial class GameOfLife : Node2D
 			return;
 
 		_cells[x, y] = alive;
+		SetPixelData(x, y, alive);
+		ApplyImageData();
 
 		if (alive)
 			_populationCount++;
 		else
 			_populationCount--;
 
-		QueueRedraw();
-		EmitStatsChanged();
 	}
 
 	public void ApplyPattern(Vector2I origin, Vector2I[] pattern)
@@ -486,8 +479,7 @@ public partial class GameOfLife : Node2D
 			SetCellState(x, y, true);
 		}
 
-		QueueRedraw();
-		EmitStatsChanged();
+		ApplyImageData();
 	}
 
 
@@ -549,6 +541,7 @@ public partial class GameOfLife : Node2D
 				}
 
 				_nextCells[x, y] = next;
+				SetPixelData(x, y, next);
 
 				if (next)
 					_populationCount++;
@@ -560,8 +553,7 @@ public partial class GameOfLife : Node2D
 		_nextCells = temp;
 
 		_generationCount++;
-		QueueRedraw();
-		EmitStatsChanged();
+		ApplyImageData();
 	}
 
 	// -------------------------------------------------------
@@ -597,14 +589,13 @@ public partial class GameOfLife : Node2D
 			{
 				bool alive = _rng.NextDouble() < _rngDensity;
 				_cells[x, y] = alive;
-
+				SetPixelData(x, y, alive);
 				if (alive)
 					_populationCount++;
 			}
 		}
 
-		QueueRedraw();
-		EmitStatsChanged();
+		ApplyImageData();
 	}
 
 	public void ResetGrid()
@@ -619,11 +610,11 @@ public partial class GameOfLife : Node2D
 			for (int y = 0; y < GridHeight; y++)
 			{
 				_cells[x, y] = false;
+				SetPixelData(x, y, false);
 			}
 		}
 
-		QueueRedraw();
-		EmitStatsChanged();
+		ApplyImageData();
 	}
 
 	// -------------------------------------------------------
@@ -667,6 +658,27 @@ public partial class GameOfLife : Node2D
 
 
 	// -------------------------------------------------------
+	// Rendering
+	// -------------------------------------------------------
+private void SetPixelData(int x, int y, bool alive)
+	{
+		int index = (y * GridWidth + x) * 4;
+		Color color = alive ? ActiveColor : Colors.Transparent;
+
+		_imageData[index] = (byte)(color.R * 255f);
+		_imageData[index + 1] = (byte)(color.G * 255f);
+		_imageData[index + 2] = (byte)(color.B * 255f);
+		_imageData[index + 3] = (byte)(color.A * 255f);
+	}
+
+	private void ApplyImageData()
+	{
+		_gridImage.SetData(GridWidth, GridHeight, false, Image.Format.Rgba8, _imageData);
+		_gridTexture.Update(_gridImage);
+		QueueRedraw();
+	}
+
+	// -------------------------------------------------------
 	// Public Readonly Properties
 	// -------------------------------------------------------
 
@@ -676,4 +688,5 @@ public partial class GameOfLife : Node2D
 	public long CellsRevivedCount => _cellsRevivedCount;
 	public long PopulationCount => _populationCount;
 	public int TicksPerSecond => _ticksPerSecond;
+	public Tool CurrentTool => _currentTool;
 }
