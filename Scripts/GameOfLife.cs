@@ -29,13 +29,13 @@ public partial class GameOfLife : Node2D
 	private bool _drawState = true;
 
 	// Patterns
-	private static readonly Vector2I[] GliderPattern =
+	public static readonly Vector2I[] GliderPattern =
 	{
-		new Vector2I(1, 0),
-		new Vector2I(2, 1),
-		new Vector2I(0, 2),
-		new Vector2I(1, 2),
-		new Vector2I(2, 2),
+	new Vector2I(1, 0),
+	new Vector2I(2, 1),
+	new Vector2I(0, 2),
+	new Vector2I(1, 2),
+	new Vector2I(2, 2),
 	};
 
 	// Stats
@@ -51,6 +51,12 @@ public partial class GameOfLife : Node2D
 	private double _timer = 0.0;
 	private double _timerSeconds = 0.2f;
 	private bool _timerActive = false;
+
+	//Tool
+	private enum Tool { Draw, Pattern }
+	private Tool _currentTool = Tool.Draw;
+	private Vector2I[] _currentPattern = GliderPattern; // Default
+
 
 	// -------------------------------------------------------
 	// Lifecycle
@@ -136,16 +142,41 @@ public partial class GameOfLife : Node2D
 		}
 
 		// Hover‑Highlight
-		if (_hoverX >= 0 && _hoverY >= 0)
+		switch (_currentTool)
 		{
-			var hoverRect = new Rect2(
-				_hoverX * CellWidth,
-				_hoverY * CellHeight,
-				CellWidth,
-				CellHeight
-			);
-			DrawRect(hoverRect, HoverColor);
+			case Tool.Draw:
+				if (_hoverX >= 0 && _hoverY >= 0)
+				{
+					var hoverRect = new Rect2(
+						_hoverX * CellWidth,
+						_hoverY * CellHeight,
+						CellWidth,
+						CellHeight
+					);
+					DrawRect(hoverRect, HoverColor);
+				}
+				break;
+			case Tool.Pattern:
+				foreach (var offset in _currentPattern)
+				{
+					int x = _hoverX + offset.X;
+					int y = _hoverY + offset.Y;
+
+					if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
+						continue;
+
+					var hoverRect = new Rect2(
+						x * CellWidth,
+						y * CellHeight,
+						CellWidth,
+						CellHeight
+					);
+
+					DrawRect(hoverRect, HoverColor);
+				}
+				break;
 		}
+
 	}
 
 	// -------------------------------------------------------
@@ -156,31 +187,67 @@ public partial class GameOfLife : Node2D
 	{
 		if (@event is InputEventMouseButton mouseEvent)
 		{
-			if (mouseEvent.ButtonIndex == MouseButton.Left ||
-				mouseEvent.ButtonIndex == MouseButton.Right)
-			{
-				if (mouseEvent.Pressed)
-				{
-					_isDrawing = true;
-					_drawState = mouseEvent.ButtonIndex == MouseButton.Left;
-				}
-				else
-				{
-					_isDrawing = false;
-				}
-			}
+			HandleMouseButton(mouseEvent);
 		}
 
 		if (@event is InputEventMouseMotion motion)
 		{
 			OnMouseHover(motion);
 
-			if (_isDrawing)
+			if (_isDrawing && _currentTool != Tool.Pattern)
 			{
 				OnDragDraw(motion);
 			}
 		}
 	}
+
+	private void HandleMouseButton(InputEventMouseButton mouseEvent)
+	{
+		// Button released: Zeichnen stoppen
+		if (!mouseEvent.Pressed)
+		{
+			_isDrawing = false;
+			return;
+		}
+
+		// Position in Zellenkoordinaten
+		Vector2 localPos = GetLocalMousePosition();
+		int x = (int)(localPos.X / CellWidth);
+		int y = (int)(localPos.Y / CellHeight);
+
+		if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
+			return;
+
+		switch (_currentTool)
+		{
+			case Tool.Draw:
+				if (mouseEvent.ButtonIndex == MouseButton.Left)
+				{
+					_isDrawing = true;
+					_drawState = true;
+					SetCellState(x, y, true);
+				}
+				else if (mouseEvent.ButtonIndex == MouseButton.Right)
+				{
+					_isDrawing = true;
+					_drawState = false;
+					SetCellState(x, y, false);
+				}
+				break;
+
+			case Tool.Pattern:
+				if (mouseEvent.ButtonIndex == MouseButton.Left)
+				{
+					// Pattern an Hover oder Klick-Position einfügen
+					if (_hoverX >= 0 && _hoverY >= 0)
+						ApplyPattern(new Vector2I(_hoverX, _hoverY), _currentPattern);
+					else
+						ApplyPattern(new Vector2I(x, y), _currentPattern);
+				}
+				break;
+		}
+	}
+
 
 	private void OnDragDraw(InputEventMouseMotion motion)
 	{
@@ -323,7 +390,10 @@ public partial class GameOfLife : Node2D
 			}
 		}
 
+		bool[,] temp = _cells;
 		_cells = _nextCells;
+		_nextCells = temp;
+
 		_generationCount++;
 		QueueRedraw();
 		EmitStatsChanged();
@@ -361,14 +431,12 @@ public partial class GameOfLife : Node2D
 			for (int y = 0; y < GridHeight; y++)
 			{
 				bool alive = _rng.NextDouble() < _rngDensity;
-				_nextCells[x, y] = alive;
+				_cells[x, y] = alive;
 
 				if (alive)
 					_populationCount++;
 			}
 		}
-
-		_cells = _nextCells;
 
 		QueueRedraw();
 		EmitStatsChanged();
@@ -385,15 +453,26 @@ public partial class GameOfLife : Node2D
 		{
 			for (int y = 0; y < GridHeight; y++)
 			{
-				_nextCells[x, y] = false;
+				_cells[x, y] = false;
 			}
 		}
-
-		_cells = _nextCells;
 
 		QueueRedraw();
 		EmitStatsChanged();
 	}
+
+	// -------------------------------------------------------
+	// Tool Management
+	// -------------------------------------------------------
+
+	public void SetToolDraw() => _currentTool = Tool.Draw;
+	public void SetToolPattern(Vector2I[] pattern)
+	{
+		_currentTool = Tool.Pattern;
+		_currentPattern = pattern;
+	}
+
+
 
 	// -------------------------------------------------------
 	// Public Readonly Properties

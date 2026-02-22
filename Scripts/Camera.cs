@@ -94,7 +94,7 @@ public partial class Camera : Camera2D
         _startButton.Pressed += OnStartButtonPressed;
         _centerCameraButton.Pressed += CenterCameraPosition;
         _rngButton.Pressed += Gol.Randomize;
-        _gliderButton.Pressed += Gol.PlaceGliderAtHover;
+        _gliderButton.Pressed += setPattern;
 
         _aliveColor.Color = Gol.ActiveColor;
         _gridColor.Color = Gol.GridColor;
@@ -238,4 +238,10 @@ public partial class Camera : Camera2D
 
         Gol.SetAutoTick(!Gol.TimerActive);
     }
+
+	    private void setPattern()
+    {
+        Gol.SetToolPattern(GameOfLife.GliderPattern);
+    }
+
 }
