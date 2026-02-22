@@ -1,0 +1,39 @@
+# Godot 4 C# - Game of Life
+
+A implementation of Conway's Game of Life built with **Godot 4** and **C#**. 
+
+## Features
+
+* **Performance Rendering:** Uses GPU texture scaling instead of individual cell rendering.
+* **Interactive Camera:** Smooth panning and zooming to navigate large simulation grids.
+* **Built-in Patterns:** A wide selection of classic Game of Life patterns ready to be placed (Gliders, Pulsars, Spaceships, and more).
+* **Simulation Controls:** Play, pause, step-by-step generation, and adjustable ticks-per-second (TPS).
+* **Live Statistics:** Real-time tracking of generation count, population, and deaths/births.
+* **Customization:** Change grid and active cell colors in real-time via the UI.
+
+## Controls
+
+| Action | Input |
+| :--- | :--- |
+| **Pan Camera** | Hold Middle Mouse Button & Drag |
+| **Zoom In / Out** | Mouse Scroll Wheel |
+| **Draw Cell / Place Pattern** | Left Mouse Button |
+| **Erase Cell** | Right Mouse Button |
+
+## Getting Started
+
+### Prerequisites
+* [Godot Engine 4.x .NET Edition](https://godotengine.org/download/)
+* A C# IDE or editor (e.g., Visual Studio, VS Code, JetBrains Rider)
+
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/DeusDe/GridTestGodot
+   ```
+2. Open the project folder in Godot 4 (.NET version).
+3. Build the C# solution (usually done automatically, or click "Build" in the Godot editor).
+4. Run the main scene!
+
+## License
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
