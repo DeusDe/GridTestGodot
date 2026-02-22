@@ -3,6 +3,7 @@ using System;
 
 public partial class GameOfLife : Node2D
 {
+	// Exports
 	[Export] public int GridWidth = 25;
 	[Export] public int GridHeight = 25;
 	[Export] public int CellHeight = 16;
@@ -10,23 +11,50 @@ public partial class GameOfLife : Node2D
 	[Export] public Color ActiveColor = new Color(0.1f, 0.8f, 0.2f, 1f);
 	[Export] public Color GridColor = new Color(0.2f, 0.03f, 0.045f, 1f);
 	[Export] public Color HoverColor = new Color(1f, 1f, 1f, 0.2f);
+
 	[Signal] public delegate void StatsChangedEventHandler();
-	private Random _rng = new Random();
+
+	// Random
+	private readonly Random _rng = new Random();
 	private float _rngDensity = 0.35f;
-	private int _hoverX = -1;
-	private int _hoverY = -1;
+
+	// Grid / Cells
 	private bool[,] _cells;
 	private bool[,] _nextCells;
+
+	// Hover & Drawing
+	private int _hoverX = -1;
+	private int _hoverY = -1;
+	private bool _isDrawing = false;
+	private bool _drawState = true;
+
+	// Patterns
+	private static readonly Vector2I[] GliderPattern =
+	{
+		new Vector2I(1, 0),
+		new Vector2I(2, 1),
+		new Vector2I(0, 2),
+		new Vector2I(1, 2),
+		new Vector2I(2, 2),
+	};
+
+	// Stats
 	private long _generationCount = 0;
 	private long _cellsDiedCount = 0;
 	private long _cellsRevivedCount = 0;
 	private long _populationCount = 0;
+
+	// Tick / Timer
 	private int _ticksThisSecond = 0;
 	private int _ticksPerSecond = 0;
 	private double _tpsTimer = 0.0;
-	private double _timer = 0.0f;
+	private double _timer = 0.0;
 	private double _timerSeconds = 0.2f;
 	private bool _timerActive = false;
+
+	// -------------------------------------------------------
+	// Lifecycle
+	// -------------------------------------------------------
 
 	public override void _Ready()
 	{
@@ -62,11 +90,15 @@ public partial class GameOfLife : Node2D
 		DrawCells();
 	}
 
-	//Draws the Grid
+	// -------------------------------------------------------
+	// Drawing
+	// -------------------------------------------------------
+
 	private void DrawGrid()
 	{
 		var totalWidth = GridWidth * CellWidth;
 		var totalHeight = GridHeight * CellHeight;
+
 		// Vertical
 		for (int x = 0; x <= GridWidth; x++)
 		{
@@ -86,7 +118,6 @@ public partial class GameOfLife : Node2D
 
 	private void DrawCells()
 	{
-
 		for (int x = 0; x < GridWidth; x++)
 		{
 			for (int y = 0; y < GridHeight; y++)
@@ -117,48 +148,50 @@ public partial class GameOfLife : Node2D
 		}
 	}
 
+	// -------------------------------------------------------
+	// Input
+	// -------------------------------------------------------
+
 	public override void _UnhandledInput(InputEvent @event)
 	{
 		if (@event is InputEventMouseButton mouseEvent)
 		{
-
-
-			if (mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Left)
-				OnLeftMouseClick((InputEventMouseButton)@event);
-
-			//			if (mouseEvent.Pressed && mouseEvent.ButtonIndex == MouseButton.Right)
-			//				nextTick();
-
-
+			if (mouseEvent.ButtonIndex == MouseButton.Left ||
+				mouseEvent.ButtonIndex == MouseButton.Right)
+			{
+				if (mouseEvent.Pressed)
+				{
+					_isDrawing = true;
+					_drawState = mouseEvent.ButtonIndex == MouseButton.Left;
+				}
+				else
+				{
+					_isDrawing = false;
+				}
+			}
 		}
 
 		if (@event is InputEventMouseMotion motion)
 		{
-			OnMouseHover((InputEventMouseMotion)@event);
-		}
+			OnMouseHover(motion);
 
+			if (_isDrawing)
+			{
+				OnDragDraw(motion);
+			}
+		}
 	}
 
-
-	public void OnLeftMouseClick(InputEventMouseButton mouseEvent)
+	private void OnDragDraw(InputEventMouseMotion motion)
 	{
-		// Mouse Position
 		Vector2 localPos = GetLocalMousePosition();
-
 		int x = (int)(localPos.X / CellWidth);
 		int y = (int)(localPos.Y / CellHeight);
 
 		if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
 			return;
 
-		_cells[x, y] = !_cells[x, y];
-
-		if (_cells[x, y] == true)
-			_populationCount++;
-		else
-			_populationCount--;
-
-		QueueRedraw();
+		SetCellState(x, y, _drawState);
 	}
 
 	public void OnMouseHover(InputEventMouseMotion motion)
@@ -181,6 +214,55 @@ public partial class GameOfLife : Node2D
 		QueueRedraw();
 	}
 
+	// -------------------------------------------------------
+	// Cell helpers & Patterns
+	// -------------------------------------------------------
+
+	private void SetCellState(int x, int y, bool alive)
+	{
+		if (_cells[x, y] == alive)
+			return;
+
+		_cells[x, y] = alive;
+
+		if (alive)
+			_populationCount++;
+		else
+			_populationCount--;
+
+		QueueRedraw();
+		EmitStatsChanged();
+	}
+
+	public void ApplyPattern(Vector2I origin, Vector2I[] pattern)
+	{
+		foreach (var offset in pattern)
+		{
+			int x = origin.X + offset.X;
+			int y = origin.Y + offset.Y;
+
+			if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
+				continue;
+
+			SetCellState(x, y, true);
+		}
+
+		QueueRedraw();
+		EmitStatsChanged();
+	}
+
+	public void PlaceGliderAtHover()
+	{
+		if (_hoverX < 0 || _hoverY < 0)
+			return;
+
+		ApplyPattern(new Vector2I(_hoverX, _hoverY), GliderPattern);
+	}
+
+	// -------------------------------------------------------
+	// Game of Life Logic
+	// -------------------------------------------------------
+
 	public int CalculateNeighbours(int xPos, int yPos)
 	{
 		int neighbourCount = 0;
@@ -189,60 +271,55 @@ public partial class GameOfLife : Node2D
 		{
 			for (int y = yPos - 1; y <= yPos + 1; y++)
 			{
-				//OwnCell
-				if (xPos == x && yPos == y)
+				// Own cell
+				if (x == xPos && y == yPos)
 					continue;
 
-				//OutOfBounds Cell
+				// Out of bounds
 				if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
 					continue;
 
-				if (_cells[x, y] == true)
+				if (_cells[x, y])
 					neighbourCount++;
 			}
 		}
 
 		return neighbourCount;
-
 	}
-
 
 	public void NextTick()
 	{
 		_populationCount = 0;
 		_ticksThisSecond++;
+
 		for (int x = 0; x < GridWidth; x++)
 		{
 			for (int y = 0; y < GridHeight; y++)
 			{
 				int neighbours = CalculateNeighbours(x, y);
-				if (_cells[x, y] == true && neighbours < 2)
+				bool current = _cells[x, y];
+				bool next = current;
+
+				if (current && neighbours < 2)
 				{
-					_nextCells[x, y] = false;
+					next = false;
 					_cellsDiedCount++;
 				}
-				else if (_cells[x, y] == true && (neighbours == 2 || neighbours == 3))
+				else if (current && neighbours > 3)
 				{
-					_nextCells[x, y] = true;
-				}
-				else if (_cells[x, y] == true && neighbours > 3)
-				{
-					_nextCells[x, y] = false;
+					next = false;
 					_cellsDiedCount++;
 				}
-				else if (_cells[x, y] == false && neighbours == 3)
+				else if (!current && neighbours == 3)
 				{
-					_nextCells[x, y] = true;
+					next = true;
 					_cellsRevivedCount++;
 				}
-				else
-				{
-					_nextCells[x, y] = _cells[x, y];
-				}
 
-				if (_nextCells[x, y] == true)
+				_nextCells[x, y] = next;
+
+				if (next)
 					_populationCount++;
-
 			}
 		}
 
@@ -252,12 +329,16 @@ public partial class GameOfLife : Node2D
 		EmitStatsChanged();
 	}
 
+	// -------------------------------------------------------
+	// Timer / Control
+	// -------------------------------------------------------
+
 	public void SetTimerSeconds(double timerSeconds)
 	{
 		_timerSeconds = timerSeconds;
 	}
 
-	public void setAutoTick(bool autoTick)
+	public void SetAutoTick(bool autoTick)
 	{
 		_timerActive = autoTick;
 	}
@@ -267,7 +348,33 @@ public partial class GameOfLife : Node2D
 		EmitSignal(SignalName.StatsChanged);
 	}
 
+	// -------------------------------------------------------
+	// Random / Reset
+	// -------------------------------------------------------
+
 	public void Randomize()
+	{
+		ResetGrid();
+
+		for (int x = 0; x < GridWidth; x++)
+		{
+			for (int y = 0; y < GridHeight; y++)
+			{
+				bool alive = _rng.NextDouble() < _rngDensity;
+				_nextCells[x, y] = alive;
+
+				if (alive)
+					_populationCount++;
+			}
+		}
+
+		_cells = _nextCells;
+
+		QueueRedraw();
+		EmitStatsChanged();
+	}
+
+	public void ResetGrid()
 	{
 		_populationCount = 0;
 		_cellsDiedCount = 0;
@@ -278,18 +385,19 @@ public partial class GameOfLife : Node2D
 		{
 			for (int y = 0; y < GridHeight; y++)
 			{
-				bool alive = _rng.NextDouble() < _rngDensity;
-				_cells[x, y] = alive;
-				_nextCells[x, y] = alive;
-
-				if (alive)
-					_populationCount++;
+				_nextCells[x, y] = false;
 			}
 		}
+
+		_cells = _nextCells;
 
 		QueueRedraw();
 		EmitStatsChanged();
 	}
+
+	// -------------------------------------------------------
+	// Public Readonly Properties
+	// -------------------------------------------------------
 
 	public bool TimerActive => _timerActive;
 	public long GenerationCount => _generationCount;
@@ -297,7 +405,4 @@ public partial class GameOfLife : Node2D
 	public long CellsRevivedCount => _cellsRevivedCount;
 	public long PopulationCount => _populationCount;
 	public int TicksPerSecond => _ticksPerSecond;
-
-
-
 }
