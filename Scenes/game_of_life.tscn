@@ -1,0 +1,83 @@
+[gd_scene format=3 uid="uid://cv8ajjdjfkaii"]
+
+[ext_resource type="Script" uid="uid://ckagyqr0iw67x" path="res://Scripts/GameOfLife.cs" id="1_gk1ju"]
+[ext_resource type="Script" uid="uid://ctym1axtqda1u" path="res://Scripts/Camera.cs" id="2_r8u36"]
+[ext_resource type="Theme" uid="uid://cem2jps5jd2mi" path="res://Themes/Theme.tres" id="3_utogw"]
+
+[node name="GameOfLife" type="Node2D" unique_id=1983781561]
+script = ExtResource("1_gk1ju")
+GridWidth = 40
+GridHeight = 40
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=450886747 node_paths=PackedStringArray("Gol")]
+anchor_mode = 0
+script = ExtResource("2_r8u36")
+Gol = NodePath("..")
+
+[node name="UI" type="CanvasLayer" parent="Camera2D" unique_id=2058974667]
+
+[node name="Vertical" type="VBoxContainer" parent="Camera2D/UI" unique_id=230805757]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GenerationLabel" type="Label" parent="Camera2D/UI/Vertical" unique_id=1807462031]
+layout_mode = 2
+
+[node name="DiedLabel" type="Label" parent="Camera2D/UI/Vertical" unique_id=1257758552]
+layout_mode = 2
+
+[node name="RevivedLabel" type="Label" parent="Camera2D/UI/Vertical" unique_id=984257583]
+layout_mode = 2
+
+[node name="PopulationLabel" type="Label" parent="Camera2D/UI/Vertical" unique_id=781966379]
+layout_mode = 2
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="Camera2D/UI/Vertical" unique_id=1099753308]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Panel" type="PanelContainer" parent="Camera2D/UI/Vertical" unique_id=694553504]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_utogw")
+
+[node name="Control" type="HBoxContainer" parent="Camera2D/UI/Vertical/Panel" unique_id=976300983]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_utogw")
+alignment = 1
+
+[node name="TickIntervalBox" type="SpinBox" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=2110846658]
+layout_mode = 2
+theme = ExtResource("3_utogw")
+min_value = 1.0
+max_value = 1000.0
+value = 5.0
+alignment = 1
+suffix = "FPS"
+
+[node name="StartButton" type="Button" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=527516321]
+layout_mode = 2
+theme = ExtResource("3_utogw")
+text = "Start"
+
+[node name="NextButton" type="Button" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=1970034589]
+layout_mode = 2
+theme = ExtResource("3_utogw")
+text = "Next"
+
+[node name="GridColor" type="ColorPickerButton" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=103915045]
+layout_mode = 2
+theme = ExtResource("3_utogw")
+text = "--------"
+
+[node name="AliveColor" type="ColorPickerButton" parent="Camera2D/UI/Vertical/Panel/Control" unique_id=1124348830]
+layout_mode = 2
+theme = ExtResource("3_utogw")
+text = "--------"

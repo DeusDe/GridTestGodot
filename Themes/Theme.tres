@@ -1,0 +1,33 @@
+[gd_resource type="Theme" format=3 uid="uid://cem2jps5jd2mi"]
+
+[sub_resource type="SystemFont" id="SystemFont_abrne"]
+
+[sub_resource type="FontVariation" id="FontVariation_yd3fu"]
+base_font = SubResource("SystemFont_abrne")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abrne"]
+bg_color = Color(0.627451, 0.54901963, 0.8039216, 0.29411766)
+border_width_left = 10
+border_width_right = 10
+border_color = Color(0.627451, 0.54901963, 0.8039216, 0.29411766)
+border_blend = true
+corner_radius_top_left = 7
+corner_radius_top_right = 7
+corner_radius_bottom_right = 7
+corner_radius_bottom_left = 7
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i6ly2"]
+bg_color = Color(0.23137255, 0.19607843, 0.26666668, 1)
+border_width_left = 10
+border_width_top = 10
+border_width_right = 10
+border_width_bottom = 10
+border_color = Color(0.23137255, 0.19607843, 0.26666668, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+
+[resource]
+Button/fonts/font = SubResource("FontVariation_yd3fu")
+Button/styles/normal = SubResource("StyleBoxFlat_abrne")
+PanelContainer/colors/BackgroundColor = Color(0.23137255, 0.19607843, 0.26666668, 0.8745098)
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_i6ly2")
