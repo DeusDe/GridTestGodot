@@ -11,7 +11,6 @@ public partial class GameOfLife : Node2D
 	[Export] public Color ActiveColor = new Color(0.1f, 0.8f, 0.2f, 1f);
 	[Export] public Color GridColor = new Color(0.2f, 0.03f, 0.045f, 1f);
 	[Export] public Color HoverColor = new Color(1f, 1f, 1f, 0.2f);
-
 	[Signal] public delegate void StatsChangedEventHandler();
 
 	// Random
@@ -365,6 +364,17 @@ var fullRect = new Rect2(0, 0, GridWidth * CellWidth, GridHeight * CellHeight);
 			if (_isDrawing && _currentTool != Tool.Pattern)
 			{
 				OnDragDraw(motion);
+			}
+		}
+	}
+	public override void _Input(InputEvent @event)
+	{
+		if (@event is InputEventKey eventKey)
+		{
+			if (eventKey.Pressed && eventKey.Keycode == Key.Escape)
+			{
+				GetParent().AddChild(GD.Load<PackedScene>("res://Scenes/MainMenu.tscn").Instantiate());
+				QueueFree();
 			}
 		}
 	}

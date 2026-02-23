@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Playground"
-run/main_scene="uid://cv8ajjdjfkaii"
+run/main_scene="uid://cll2feijt7gl1"
 config/features=PackedStringArray("4.6", "C#", "GL Compatibility")
 
 [display]

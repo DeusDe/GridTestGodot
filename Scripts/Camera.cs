@@ -114,7 +114,7 @@ public partial class Camera : Camera2D
 		_centerCameraButton.Pressed -= CenterCameraPosition;
 		_rngButton.Pressed -= Gol.Randomize;
 
-		_toolButton.Pressed -= Gol.SetToolPattern;
+		_toolButton.Pressed -= OnToolButtonPressed;
 		_patternSelect.ItemSelected -= OnPatternSelected;
 
 		_aliveColor.ColorChanged -= AliveColorPressed;
